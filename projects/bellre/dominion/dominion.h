@@ -97,6 +97,14 @@ int playCard(int handPos, int choice1, int choice2, int choice3,
 	     struct gameState *state);
 /* Play card with index handPos from current player's hand */
 
+int caseBaron(struct gameState *state, int choice1, int currentPlayer);
+int caseMine(struct gameState *state, int choice1, int choice2, int handPos, int currentPlayer);
+int caseMinion(struct gameState *state, int choice1, int choice2, int handPos, int currentPlayer);
+int caseAmbassador(struct gameState *state, int choice1, int choice2, int handPos, int currentPlayer);
+int caseTribute(struct gameState *state, int currentPlayer, int nextPlayer);
+
+
+
 int buyCard(int supplyPos, struct gameState *state);
 /* Buy card with supply index supplyPos */
 

@@ -861,9 +861,10 @@ int caseAmbassador(struct gameState *state, int choice1, int choice2, int handPo
 
 int caseTribute(struct gameState *state, int currentPlayer, int nextPlayer) 
 {
+	int tributeRevealedCards[2] = {-1, -1};
+
 	if(currentPlayer == nextPlayer)
 	{
-	int tributeRevealedCards[2] = {-1, -1};
 	int i;
       if ((state->discardCount[nextPlayer] + state->deckCount[nextPlayer]) <= 1){
 	if (state->deckCount[nextPlayer] > 0){
