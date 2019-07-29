@@ -651,11 +651,9 @@ void cardCheck(int card, struct gameState *state, int currentPlayer)
 	{
 		gainCard(card, state, 0, currentPlayer); // gain that type of card
 		state->supplyCount[card]--; // decrement that card from the supply
-		if(supplyCount(card, state) == 0)
-		{
-			isGameOver(state);
-		}
 	}
+	else if(supplyCount(card, state) == 0)
+		isGameOver(state);
 
 }
 
@@ -664,10 +662,10 @@ int caseBaron(struct gameState *state, int choice1, int currentPlayer)
 	//printf("This is the baron card");
       state->numBuys++;//Increase buys by 1!
       if (choice1 > 0){//Boolean true or going to discard an estate
-	int p = 1;//Iterator for hand! **BUG HERE**
+	int p = 0;//Iterator for hand! 
 	int card_not_discarded = 1;//Flag for discard set!
 	while(card_not_discarded){
-	  if (state->hand[currentPlayer][p] = estate){//Found an estate card! **BUG HERE**
+	  if (state->hand[currentPlayer][p] == estate){//Found an estate card!
 	    state->coins += 4;//Add 4 coins to the amount of coins
 	    state->discard[currentPlayer][state->discardCount[currentPlayer]] = state->hand[currentPlayer][p];
 	    state->discardCount[currentPlayer]++;
@@ -772,7 +770,7 @@ int caseMinion(struct gameState *state, int choice1, int choice2, int handPos, i
 	    }
 				
 	  //draw 4
-		simpleForLoop(currentPlayer, state, 100); //**BUG HERE**			
+		simpleForLoop(currentPlayer, state, 4); 			
 	  //other players discard hand and redraw if hand size > 4
 	int i; 
 	 for (i = 0; i < state->numPlayers; i++)
@@ -861,8 +859,6 @@ int caseAmbassador(struct gameState *state, int choice1, int choice2, int handPo
 
 int caseTribute(struct gameState *state, int currentPlayer, int nextPlayer) 
 {
-	if(currentPlayer == nextPlayer)
-	{
 	int tributeRevealedCards[2] = {-1, -1};
 	int i;
       if ((state->discardCount[nextPlayer] + state->deckCount[nextPlayer]) <= 1){
@@ -880,8 +876,7 @@ int caseTribute(struct gameState *state, int currentPlayer, int nextPlayer)
 	    printf("No cards to reveal\n");
 	  }
 	}
-      }
-	    
+	}    
       else{
 	if (state->deckCount[nextPlayer] == 0){
 	  for (i = 0; i < state->discardCount[nextPlayer]; i++){
@@ -918,10 +913,9 @@ int caseTribute(struct gameState *state, int currentPlayer, int nextPlayer)
 	}
 	else{//Action Card
 	  state->numActions = state->numActions + 2;
-	i--;	//**BUG HERE**
 	}
       }
-	}    
+	    
 	return 0;
 }
 
