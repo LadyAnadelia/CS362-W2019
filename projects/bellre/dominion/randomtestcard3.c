@@ -108,11 +108,14 @@ int main()
 
 		drawCard(currentPlayer, &testG);
 		drawCard(currentPlayer, &testG);
+		
+
+		//printf("DeckCount = %d, expected = %d\n", G.deckCount[nextPlayer], testG.deckCount[nextPlayer]);
 		if((testG.coins + 2) == G.coins)
 			passed = 1;
 		else if((testG.numActions + 2) == G.numActions)
 			passed = 1;
-		else if((G.deckCount[nextPlayer]) != (testG.deckCount[nextPlayer] - 2 ))
+		else if((G.deckCount[nextPlayer]) != (testG.deckCount[nextPlayer]))
 		{
 			printf("Incorect deckCount for nextPlayer (2)\n");
 			deckFail2++;
