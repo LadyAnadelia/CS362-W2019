@@ -26,7 +26,7 @@ int main()
 	//values to be randomized
 	int choice1, choice2, choice;
 	int currentPlayer;
-	int nextPlayer = 1;
+	int nextPlayer;
 	int handPos = 1;
 
 
@@ -44,7 +44,7 @@ int main()
 	int i;
 	for (i = 0; i < MAX_RUNS; i++)
 	{
-
+		nextPlayer = 1;
 		//initalize the game with set values
 		initializeGame(numPlayer, k, seed, &G);
 
