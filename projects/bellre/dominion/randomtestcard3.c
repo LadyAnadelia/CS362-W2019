@@ -32,8 +32,8 @@ int main()
 	int passedCount = 0;
 	int deckFail = 0;		
 	int discardFail = 0;
-	
-
+	int deckFail2 = 0;    
+	int tribFail = 0;
 
 
 	//for the random values
@@ -73,6 +73,8 @@ int main()
 		//loop though and check values of first if-statment
 		if((G.discardCount[nextPlayer] + G.deckCount[nextPlayer]) <= 1)
 		{
+
+			//printf("Path 1: ");
 			if(G.deckCount[nextPlayer] > 0)
 			{
 				if((testG.deckCount[nextPlayer] - 1) != G.deckCount[nextPlayer]);
@@ -95,14 +97,33 @@ int main()
 		else
 		{
 
-
+			//printf("Path 2: ");
+			if(G.deckCount[nextPlayer] == 0)
+			{
+				testG.deckCount[nextPlayer]++;
+				testG.discardCount[nextPlayer]--;
+			}
+			if((G.deckCount[nextPlayer]) != (testG.deckCount[nextPlayer] - 2 ))
+			{
+				drawCard(currentPlayer, &testG);
+				drawCard(currentPlayer, &testG);
+				if((testG.coins + 2) == G.coins)
+					passed = 1;
+				else if((testG.numActions + 2) == G.numActions)
+					passed = 1;
+				else if((G.deckCount[nextPlayer]) != (testG.deckCount[nextPlayer] - 2 ))
+				{
+					printf("Incorect deckCount for nextPlayer (2)\n");
+					deckFail2++;
+					passed = 0;
+				}
+				else
+					printf("The tribute reveal card failed\n");
+					tribFail++;
+					passed = 0;
+			}
 
 		}
-
-
-
-
-
 
 		if(passed == 1)
 			passedCount++;
@@ -110,7 +131,10 @@ int main()
 	}
 
 	printf("\n%d Tests Passed!\t", passedCount);
-
+	printf("%d deckCount1 for Next Player Failed, ", deckFail);
+	printf("%d discardCount1 for NextPlayer Failed\n", discardFail);
+	printf("%d deckCount2 for Next Player Failed, ", deckFail2);
+	printf("%d tribute reveal card failed\n", tribFail);
 
 
 	if(passedCount == MAX_RUNS)
