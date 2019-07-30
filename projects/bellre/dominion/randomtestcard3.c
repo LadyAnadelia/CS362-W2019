@@ -12,7 +12,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define MAX_RUNS 500000
+#define MAX_RUNS 1000
 
 int main()
 {
@@ -103,27 +103,29 @@ int main()
 				testG.deckCount[nextPlayer]++;
 				testG.discardCount[nextPlayer]--;
 			}
-			if((G.deckCount[nextPlayer]) != (testG.deckCount[nextPlayer] - 2 ))
-			{
-				drawCard(currentPlayer, &testG);
-				drawCard(currentPlayer, &testG);
-				if((testG.coins + 2) == G.coins)
-					passed = 1;
-				else if((testG.numActions + 2) == G.numActions)
-					passed = 1;
-				else if((G.deckCount[nextPlayer]) != (testG.deckCount[nextPlayer] - 2 ))
-				{
-					printf("Incorect deckCount for nextPlayer (2)\n");
-					deckFail2++;
-					passed = 0;
-				}
-				else
-					printf("The tribute reveal card failed\n");
-					tribFail++;
-					passed = 0;
-			}
-
+			
 		}
+
+		drawCard(currentPlayer, &testG);
+		drawCard(currentPlayer, &testG);
+		if((testG.coins + 2) == G.coins)
+			passed = 1;
+		else if((testG.numActions + 2) == G.numActions)
+			passed = 1;
+		else if((G.deckCount[nextPlayer]) != (testG.deckCount[nextPlayer] - 2 ))
+		{
+			printf("Incorect deckCount for nextPlayer (2)\n");
+			deckFail2++;
+			passed = 0;
+		}
+		else
+		{
+			printf("The tribute reveal card failed\n");
+			tribFail++;
+			passed = 0;
+		}
+
+		
 
 		if(passed == 1)
 			passedCount++;
