@@ -112,7 +112,7 @@ int main()
 
 			if(testG.handCount[nextPlayer] != G.handCount[nextPlayer])
 			{	
-				printf("Incorrect hand count for current player\n");
+				printf("Incorrect hand count for next player\n");
 				failureNext++;
 				passed = 0;
 			}
