@@ -1,106 +1,91 @@
-#include "dominion_helpers.h"   // "dominion.h" is included within this header.
-#include <stdio.h>              // printf
-#include <string.h>             // memcpy
+/*	INITATTE GAME
+ * Name: Rebecca Bell
+ *Part of document came from examples given to us in class 
+testUpdateCoins.c and cardtest4.c
+ */
 
-#define testResult int
-#define success 1
-#define failure 0
+#include "dominion.h"
+#include "dominion_helpers.h"
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include "rngs.h"
 
-#define bool  int
-#define true  1
-#define false 0
+//set to 0 to remove printfs from output
+#define NOISY_TEST 1
 
-bool NOISY_TEST = false;
-#define noisyprint if(NOISY_TEST) printf
+int main() {
+	int seed  = 1000;
+	int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
+	int k2[10] = {adventurer, council_room, feast, feast, mine, mine, smithy, village, baron, great_hall};
+	
+	struct gameState G;
+#if(NOISY_TEST == 1)		
+	printf("-----------Testing function: initializeGame() --------------\n");
+#endif	
+	//memcpy(&testG, &G, sizeof(struct gameState));
+	
+	/************************************************************/
 
-char testTitle[256];
 
-void assert_true(testResult result)
-{
-  if (result == success)
-    printf("+ PASS\t%s\n", testTitle);
-  else
-    printf("- FAIL\t%s\n", testTitle);
-}
+#if(NOISY_TEST == 1)
+	int t, a, b, c, d, e, copperCT, numPlayers;
+	t = initializeGame(5, k, seed, &G); // test if not enough plys
+        printf("return value 5 game players = %d, expected = -1\n", t);
 
-testResult first_test_returns_success()
-{
-  noisyprint("First test returns success:\n");
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "First test returns success.", 255);
+	a = initializeGame(1, k, seed, &G); // test if not enough plys
+	printf("return value 1 game player = %d, expected = -1\n", a);
+	b = initializeGame(2, k2, seed, &G); // if 2 plys and same type of a card
+	printf("return value 2 game player 1 repeated card = %d, expected = -1\n", b);
+													
+	// game initialize to work with 2 players
+	numPlayers = 2;
+	c = initializeGame(numPlayers, k, seed, &G); //2 plyrs
+	copperCT = 60 - (7 * numPlayers);
+	printf("Return value = %d, expected = 0\n", c);
+	printf("2 Players: supply curse = %d, expected = 10\n", G.supplyCount[curse]); 
+	printf("2 Players: supply estate = %d, expected = 8\n", G.supplyCount[estate]);
+	printf("2 Players: supply duchy = %d, expected = 8\n", G.supplyCount[duchy]);
+	printf("2 Players: supply province = %d, expected = 8\n", G.supplyCount[province]);
+	printf("2 Players: supply copper = %d, expected = %d\n", G.supplyCount[copper], copperCT);
+	printf("2 Players: supply silver = %d, expected = 40\n", G.supplyCount[silver]);
+	printf("2 Players: supply gold = %d, expected = 30\n", G.supplyCount[gold]);
 
-  struct gameState gameState;
+	memset(&G, 23, sizeof(struct gameState)); // clean the game
 
-  const int NUM_PLAYERS = 2;
-  const int RNG_SEED    = 1000;
+													
+	// game initialize to work with 3 players
+	numPlayers = 3;
+	d = initializeGame(numPlayers, k, seed, &G); //3 plyrs
+	copperCT = 60 - (7 * numPlayers);
+	printf("Return value = %d, expected = 0\n", d);
+	printf("3 Players: supply curse = %d, expected = 20\n", G.supplyCount[curse]); 
+	printf("3 Players: supply estate = %d, expected = 12\n", G.supplyCount[estate]);
+	printf("3 Players: supply duchy = %d, expected = 12\n", G.supplyCount[duchy]);
+	printf("3 Players: supply province = %d, expected = 12\n", G.supplyCount[province]);
+	printf("3 Players: supply copper = %d, expected = %d\n", G.supplyCount[copper], copperCT);
+	printf("3 Players: supply silver = %d, expected = 40\n", G.supplyCount[silver]);
+	printf("3 Players: supply gold = %d, expected = 30\n", G.supplyCount[gold]);
 
-  int kingdom[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
+	memset(&G, 23, sizeof(struct gameState)); // clean the game
+														
+ 													    
+ 	// game initialize to work with 4 players
+ 	numPlayers = 4;
+ 	e = initializeGame(numPlayers, k, seed, &G); //4 plyrs
+ 	copperCT = 60 - (7 * numPlayers);
+ 	printf("Return value = %d, expected = 0\n", e);
+ 	printf("4 Players: supply curse = %d, expected = 30\n", G.supplyCount[curse]); 
+ 	printf("4 Players: supply estate = %d, expected = 12\n", G.supplyCount[estate]);
+ 	printf("4 Players: supply duchy = %d, expected = 12\n", G.supplyCount[duchy]);
+ 	printf("4 Players: supply province = %d, expected = 12\n", G.supplyCount[province]);
+ 	printf("4 Players: supply copper = %d, expected = %d\n", G.supplyCount[copper], copperCT);
+ 	printf("4 Players: supply silver = %d, expected = 40\n", G.supplyCount[silver]);
+ 	printf("4 Players: supply gold = %d, expected = 30\n", G.supplyCount[gold]);
+ 
+ 	memset(&G, 23, sizeof(struct gameState)); // clean the game
 
-  initializeGame(NUM_PLAYERS, kingdom, RNG_SEED, &gameState);
+#endif
 
-  return success;
-}
-
-testResult game_initializes_to_two_players()
-{
-  noisyprint("game initializes to two players:\n");
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "game initializes to two players.", 255);
-
-  struct gameState gameState;
-
-  const int num_players = 2;
-  const int rng_seed    = 1000;
-
-  int kingdom[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
-
-  initializeGame(num_players, kingdom, rng_seed, &gameState);
-
-  if(gameState.numPlayers == 2)
-    return success;
-  else
-    return failure;
-}
-
-testResult supply_counts_at_10()
-{
-  noisyprint("Supply counts start at 10:\n");
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "Supply counts start at 10.", 255);
-
-  struct gameState gameState;
-
-  const int num_players = 2;
-  const int rng_seed    = 1000;
-
-  int kingdom[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
-
-  initializeGame(num_players, kingdom, rng_seed, &gameState);
-
-  if(gameState.supplyCount[adventurer]   != 10) return failure;
-  if(gameState.supplyCount[embargo]      != 10) return failure;
-  if(gameState.supplyCount[village]      != 10) return failure;
-  if(gameState.supplyCount[minion]       != 10) return failure;
-  if(gameState.supplyCount[mine]         != 10) return failure;
-  if(gameState.supplyCount[cutpurse]     != 10) return failure;
-  if(gameState.supplyCount[sea_hag]      != 10) return failure;
-  if(gameState.supplyCount[tribute]      != 10) return failure;
-  if(gameState.supplyCount[smithy]       != 10) return failure;
-  if(gameState.supplyCount[council_room] != 10) return failure;
-
-  return success;
-}
-
-int main(int argc, char *argv[]){
-  if (argc > 1 && strcmp(argv[1], "-n") == 0) NOISY_TEST = true;
-
-  printf("\n===BEGIN TEST SUITE FOR CARD: INITIALIZEGAME===\n");
-  if(!NOISY_TEST) printf("For noisy test: %s -n\n\n", argv[0]);
-
-  assert_true( first_test_returns_success() );
-  assert_true( game_initializes_to_two_players() );
-  assert_true( supply_counts_at_10() );
-
-  printf("====END TEST SUITE FOR CARD: INITIALIZEGAME====\n\n");
-  return 0;
+	return 0;
 }

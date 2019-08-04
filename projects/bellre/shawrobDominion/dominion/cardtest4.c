@@ -1,106 +1,68 @@
-#include "dominion_helpers.h"   // "dominion.h" is included within this header.
-#include <stdio.h>              // printf
-#include <string.h>             // memcpy
+/*	GET WINNER																	
+ * Name: Rebecca Bell
+ *Part of document came from examples given to us in class 
+testUpdateCoins.c and cardtest4.c
+ */
 
-#define testResult int
-#define success 1
-#define failure 0
+#include "dominion.h"
+#include "dominion_helpers.h"
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include "rngs.h"
 
-#define bool  int
-#define true  1
-#define false 0
+//set to 0 to remove printfs from output
+#define NOISY_TEST 1
 
-bool NOISY_TEST = false;
-#define noisyprint if(NOISY_TEST) printf
 
-char testTitle[256];
-
-void assert_true(testResult result)
+void testFunction(int player, struct gameState *state)
 {
-  if (result == success)
-    printf("+ PASS\t%s\n", testTitle);
-  else
-    printf("- FAIL\t%s\n", testTitle);
+	state->hand[player][0] = province;
+	state->discard[player][0] = province;
 }
 
-testResult first_test_returns_success(struct gameState gameState)
-{
-  noisyprint("First test returns success:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "First test returns success.", 255);
 
-  return success;
-}
 
-testResult ties_marked_correctly(struct gameState gameState)
-{
-  noisyprint("Ties marked correctly:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "Ties marked correctly.", 255);
 
-  int players[2] = {0};
-  for(int i = 0; i < 2; i++)
-    noisyprint("\tplayer[%d] = %d\n", i, players[i]);
+int main() {
+	int seed  = 1000;
+	int size = 2;
+	int numPlayer[size];
+	int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
+	
+	struct gameState testG, G;
+	initializeGame(size, k, seed, &G);
+#if(NOISY_TEST == 1)		
+	printf("-----------Testing card: getWinner() --------------\n");
+#endif	
+	memcpy(&testG, &G, sizeof(struct gameState));
+	
+	/************************************************************/
 
-  getWinners(players, &testState);
+	int r;
+#if(NOISY_TEST == 1)
+	r = getWinners(numPlayer, &testG);
+	printf("Test functions value = %d, expected = 0\n", r);
+	printf("Unplayed players = %d, expected = -9999\n", numPlayer[0]);
 
-  for(int i = 0; i < 2; i++)
-    noisyprint("\tplayer[%d] = %d\n", i, players[i]);
+	int t, z; // used as varibles for the functions end value
+	testFunction(0, &testG);
+	z = getWinners(numPlayer, &testG);
+	printf("Test of winner being player 0, return value %d\n", z);
+	testFunction(1, &G);
+	t = getWinners(numPlayer, &G);
+	printf("Test of winner being player 1, return value %d\n", t);
+	int p;
 
-  if(players[0] == players[1])
-    return success;
-  else
-    return failure;
-}
+	p = scoreFor(1, &G);
+	printf("Test of score expected score > 0 got %d\n", p);
+#endif
+	//assert(r == 0);
+	//assert(-9999 == numPlayer[4]);
+	//assert(z == 0); 
+	//assert(t == 0);
+	//assert(p > 0);
 
-testResult winner_marked_correctly(struct gameState gameState)
-{
-  noisyprint("Winner marked correctly:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
+	return 0;
 
-  testState.deck[1][0] = province;
-  if(!NOISY_TEST) strncpy(testTitle, "Winner marked correctly.", 255);
-
-  int players[2] = {0};
-  for(int i = 0; i < 2; i++)
-    noisyprint("\tplayer[%d] = %d\n", i, players[i]);
-
-  getWinners(players, &testState);
-
-  for(int i = 0; i < 2; i++)
-    noisyprint("\tplayer[%d] = %d\n", i, players[i]);
-
-  if(players[1] == 1 && players[0] == 0)
-    return success;
-  else
-    return failure;
-}
-
-int main(int argc, char *argv[]){
-  if (argc > 1 && strcmp(argv[1], "-n") == 0) NOISY_TEST = true;
-
-  printf("\n===BEGIN TEST SUITE FOR FUNCTION: GETWINNERS===\n");
-  if(!NOISY_TEST) printf("For noisy test: %s -n\n\n", argv[0]);
-
-  struct gameState gameState;
-
-  const int NUM_PLAYERS = 2;
-  const int RNG_SEED    = 1000;
-
-  int kingdom[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
-
-  initializeGame(NUM_PLAYERS, kingdom, RNG_SEED, &gameState);
-
-  assert_true( first_test_returns_success(gameState) );
-  assert_true( ties_marked_correctly(gameState) );
-  assert_true( winner_marked_correctly(gameState) );
-
-  printf("====END TEST SUITE FOR FUNCTION: GETWINNERS====\n\n");
-  return 0;
 }

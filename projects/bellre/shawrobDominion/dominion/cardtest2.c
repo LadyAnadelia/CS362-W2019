@@ -1,80 +1,96 @@
-#include "dominion_helpers.h"   // "dominion.h" is included within this header.
-#include <stdio.h>              // printf
-#include <string.h>             // memcpy
+/* SHUFFLE CARD
+ * Name: Rebecca Bell
+ *Part of document came from examples given to us in class 
+testUpdateCoins.c and cardtest4.c
+ */
 
-#define testResult int
-#define success 1
-#define failure 0
+#include "dominion.h"
+#include "dominion_helpers.h"
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include "rngs.h"
 
-#define bool  int
-#define true  1
-#define false 0
+//set to 0 to remove printfs from output
+#define NOISY_TEST 1
 
-bool NOISY_TEST = false;
-#define noisyprint if(NOISY_TEST) printf
-
-char testTitle[256];
-
-void assert_true(testResult result)
+int arrComp(struct gameState *testGZ, struct gameState *G, int player)
 {
-  if (result == success)
-    printf("+ PASS\t%s\n", testTitle);
-  else
-    printf("- FAIL\t%s\n", testTitle);
+	int i, counter; //counter to check # of matches
+
+	for( i = 0; i < testGZ->deckCount[player]; i++)
+	{
+		if(testGZ->deck[player][i] == G->deck[player][i])
+			counter++;
+	}
+
+	if(counter == testGZ->deckCount[player])
+		return 1;
+	else
+		return 0;
 }
 
-testResult first_test_returns_success(struct gameState gameState)
-{
-  noisyprint("First test returns success:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "First test returns success.", 255);
 
-  return success;
-}
 
-testResult shuffled_deck_stays_same_size(struct gameState gameState)
-{
-  noisyprint("Shuffling a deck does not change its size:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "Shuffling a deck does not change its size.", 255);
+int main() {
+	int seed  = 1000;
+	int numPlayer = 2;
+	int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
+	
+	struct gameState testG, G, testGZ;
+	initializeGame(numPlayer, k, seed, &G);
+#if(NOISY_TEST == 1)		
+	printf("-----------Testing function: shuffle() --------------\n");
+#endif	
+	memcpy(&testG, &G, sizeof(struct gameState));
+	
+	/************************************************************/
+	int currentPlayer = 0;
 
-  int deckSizeBefore = 0;
-  int deckSizeAfter  = 0;
+	//origDeckCount = G.deckCount[currentPlayer];
+	int r;
+	 r = shuffle(currentPlayer, &testG);
 
-  deckSizeBefore = testState.deckCount[0];
+#if(NOISY_TEST == 1)
+	printf("return value with cards in deck = %d, expected = 0\n", r);
+	testG.deckCount[currentPlayer] = 0; // set to test the count
 
-  shuffle(0, &testState);
+#endif
+	assert(r == 0);
+#if(NOISY_TEST == 1)	
+	
+	r = shuffle(currentPlayer, &testG);
+	printf("return value with NO cards in deck = %d, expected = -1\n", r);
+#endif
+	assert(r == -1);
 
-  deckSizeAfter = testState.deckCount[0];
+#if(NOISY_TEST == 1)
 
-  if(deckSizeAfter == deckSizeBefore)
-    return success;
-  else
-    return failure;
-}
+	testG.deckCount[currentPlayer] = 5; //reset for next test to work
+	testG.discardCount[currentPlayer] = 0;
+	r = shuffle(currentPlayer, &testG);
+	printf("check the return value with no discard cards = %d, expected = 0\n", r);
+	
+	int t;
+	testG.discardCount[currentPlayer] = 4;
+	t = shuffle(currentPlayer, &testG); //should get error?
+	printf("check return value with discard cards = %d, expected = -1\n", t);
 
-int main(int argc, char *argv[]){
-  if (argc > 1 && strcmp(argv[1], "-n") == 0) NOISY_TEST = true;
+	memcpy(&testGZ, &G, sizeof(struct gameState));
+	int player = 1;
 
-  printf("\n===BEGIN TEST SUITE FOR FUNCTION: SHUFFLE===\n");
-  if(!NOISY_TEST) printf("For noisy test: %s -n\n\n", argv[0]);
+	int t1, r1;
+	t1 = shuffle(player, &testGZ);
 
-  struct gameState gameState;
+	printf("check the return value with no discard cards = %d, expected = 0\n", t1);
+	//check to see if the values match each other
+	r1 = arrComp(&testGZ, &G, player);
+	printf("check shuffle of cards = %d, expected = 0", r1);
 
-  const int NUM_PLAYERS = 2;
-  const int RNG_SEED    = 1000;
-
-  int kingdom[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
-
-  initializeGame(NUM_PLAYERS, kingdom, RNG_SEED, &gameState);
-
-  assert_true( first_test_returns_success(gameState) );
-  assert_true( shuffled_deck_stays_same_size(gameState) );
-
-  printf("====END TEST SUITE FOR FUNCTION: SHUFFLE====\n\n");
-  return 0;
+#endif
+	//assert(r == 0);
+	//assert(t1 == 0);
+	//assert(t == -1);
+	//assert(r1 == 0);
+	return 0;
 }

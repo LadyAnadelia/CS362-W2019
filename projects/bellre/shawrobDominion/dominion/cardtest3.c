@@ -1,80 +1,67 @@
-#include "dominion_helpers.h"   // "dominion.h" is included within this header.
-#include <stdio.h>              // printf
-#include <string.h>             // memcpy
+/* 	ENDTURN
+* Name: Rebecca Bell
+ *Part of document came from examples given to us in class 
+testUpdateCoins.c and cardtest4.c
+ */
 
-#define testResult int
-#define success 1
-#define failure 0
+#include "dominion.h"
+#include "dominion_helpers.h"
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include "rngs.h"
 
-#define bool  int
-#define true  1
-#define false 0
+//set to 0 to remove printfs from output
+#define NOISY_TEST 1
+#define TESTCARD "baron"
 
-bool NOISY_TEST = false;
-#define noisyprint if(NOISY_TEST) printf
+int main() {
+	int seed  = 1000;
+	int numPlayer = 2;
+	int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
+	
+	struct gameState testG, G;
+	initializeGame(numPlayer, k, seed, &G);
+#if(NOISY_TEST == 1)		
+	
+	printf("-----------Testing function: endturn() --------------\n");
+#endif	
+	memcpy(&testG, &G, sizeof(struct gameState));
+	
+	/************************************************************/
+	//int currentPlayer = 0;
 
-char testTitle[256];
+#if(NOISY_TEST == 1)
 
-void assert_true(testResult result)
-{
-  if (result == success)
-    printf("+ PASS\t%s\n", testTitle);
-  else
-    printf("- FAIL\t%s\n", testTitle);
-}
+	int player, firstPlayer; 
+	player = firstPlayer = whoseTurn(&testG); // before
+	int r;
 
-testResult first_test_returns_success(struct gameState gameState)
-{
-  noisyprint("First test returns success:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "First test returns success.", 255);
+	r = endTurn(&testG);
+	printf("The return value of the function is %d, expected = 0\n", r);
 
-  return success;
-}
+	int nextPlayer;
+	nextPlayer = whoseTurn(&testG); // after the function
+	printf("Player changed to %d, expected to != %d\n", nextPlayer, player);
 
-testResult end_turn_changes_active_player(struct gameState gameState)
-{
-  noisyprint("End turn changes active player:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "End turn changes active player.", 255);
+	printf("Players hand count changed to %d, expected = 0\n", testG.handCount[player]);
 
-  int activePlayerBefore = 0;
-  int activePlayerAfter  = 0;
-
-  activePlayerBefore = testState.whoseTurn;
-
-  endTurn(&testState);
-
-  activePlayerAfter = testState.whoseTurn;
-
-  if(activePlayerAfter != activePlayerBefore)
-    return success;
-  else
-    return failure;
-}
-
-int main(int argc, char *argv[]){
-  if (argc > 1 && strcmp(argv[1], "-n") == 0) NOISY_TEST = true;
-
-  printf("\n===BEGIN TEST SUITE FOR FUNCTION: ENDTURN===\n");
-  if(!NOISY_TEST) printf("For noisy test: %s -n\n\n", argv[0]);
-
-  struct gameState gameState;
-
-  const int NUM_PLAYERS = 2;
-  const int RNG_SEED    = 1000;
-
-  int kingdom[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
-
-  initializeGame(NUM_PLAYERS, kingdom, RNG_SEED, &gameState);
-
-  assert_true( first_test_returns_success(gameState) );
-  assert_true( end_turn_changes_active_player(gameState) );
-
-  printf("====END TEST SUITE FOR FUNCTION: ENDTURN====\n\n");
-  return 0;
+#endif
+	assert(nextPlayer != player);
+	assert(testG.handCount[player] == 0);
+	assert(r == 0);
+#if(NOISY_TEST == 1)
+	r = endTurn(&testG);
+	printf("The return value of the function is %d, expected = 0\n", r);
+	nextPlayer = whoseTurn(&testG);
+	printf("Player changed to %d, expected to = %d\n", nextPlayer, firstPlayer);
+	int handCT;
+	handCT = testG.handCount[nextPlayer];
+	printf("Players number of cards = %d, expected 0\n", handCT);
+	
+#endif
+	//assert(nextPlayer == firstPlayer); // 2 players in game
+	//assert(handCT == 0);
+	//assert(r == 0);
+	return 0;
 }

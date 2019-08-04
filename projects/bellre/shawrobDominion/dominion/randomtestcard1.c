@@ -1,142 +1,137 @@
-// Create alias 'bool' for primitive type 'int' to improve code clarity:
-#define bool  int
-#define true  1
-#define false 0
+/*
+ * Name: Rebecca Bell
+ * Description: random testing values for the dominion.c baron card
+ */
 
-#define NUM_TEST_ITERATIONS 500
-
-#include <assert.h>
 #include "dominion.h"
 #include "dominion_helpers.h"
-#include <math.h>
-#include "rngs.h"
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include "rngs.h"
+#include <time.h>
+#include <stdlib.h>
 
-bool NOISY_TEST = false; // If true, display extra information during execution (normally used for debugging).
-#define noisyprint if(NOISY_TEST) printf
+#define MAX_RUNS 5000000
 
-bool check_switch_noisyTest(int argc, char *argv[]); // Return true if flag '-n' set.
-void print_gameState(struct gameState *pre, struct gameState *post);
-
-int main(int argc, char *argv[])
+int main()
 {
-  NOISY_TEST = check_switch_noisyTest(argc, argv);
-  printf("===BEGIN random tests for card: BARON===\n");
+	//have control over the gamestate values
+	int seed = 2000;
+	int numPlayer = 2;
+	int k[10] = {adventurer, tribute, estate, gardens, village, embargo, minion, mine, baron, smithy};
+	struct gameState G, testG;
+	
 
-  int currentTest, currentByte; // Iterators.
+	//values to be randomized
+	int choice1 = 0;
+	int currentPlayer = 0;
+	int handCT = 0;
+	int supplyCT = 0; //estate card supply count
 
-  for (currentTest = 0; currentTest < NUM_TEST_ITERATIONS; currentTest++)
-  {
-    noisyprint("===ITERATION %d===\n", currentTest);
-    struct gameState pre, post;   // For comparing game state before and after test execution.
-    
-    for (currentByte = 0; currentByte < sizeof(struct gameState); currentByte++)
-      ((char*)&post)[currentByte] = floor(Random() * 256);
+										
+	//to test and see what values proved true
+	int passed;
+	int failureBuy = 0, failureCoin = 0, failureDiscard = 0, failureHand = 0;
+	int passedCount = 0;
+                                                                                	
+	//for the random values
+	srand(time(NULL));
 
-    post.numPlayers = floor(Random() * 3) + 2; // Valid player count: 2-4.
-    int player = floor(Random() * post.numPlayers) + 1; // Choose one of the players.
-    int choice = floor(Random() * 2);
+	int i;
+	for (i = 0; i < MAX_RUNS; i++)
+	{
 
-    noisyprint("Number of players = %d\t", post.numPlayers);
-    noisyprint("Chosen player = %d\t", player);
-    noisyprint("Choice = %d\n", choice);
+		//initalize the game with set values
+		initializeGame(numPlayer, k, seed, &G);
+		
 
-    // Ensure sane values for relevant game state values.
-    post.supplyCount[estate] = floor(Random() * 24);
-    post.discardCount[player] = floor(Random() * MAX_DECK);
-    int currentCard = 0;
-    post.handCount[player] = 0;
-    for (currentCard = 0; currentCard < MAX_HAND; currentCard++)
-    {
-      post.hand[player][currentCard] = floor(Random() * 28);
-      ++post.handCount[player];
-      if(floor(Random() * 4) == 1) break;
-    }
-    
-    memcpy(&pre, &post, sizeof(struct gameState));
-    execute_baron(&post, choice, player);
-    // Test results
-    if(pre.numBuys + 1 != post.numBuys) printf("FAIL numBuys not incremented\n");
-    if(pre.coins + 4 != post.coins && choice == 1) printf("FAIL coins not incremented\n");
+		//make a copy of the game 
+		memcpy(&testG, &G, sizeof(struct gameState));
 
-    if(NOISY_TEST) print_gameState(&pre, &post);
-  }
-  printf("===END   random tests for card: BARON===\n");
-  return 0;
-}
+		//random card could be estate card
+		choice1 = rand() % (26 + 0);
 
-bool check_switch_noisyTest(int argc, char *argv[])
-{
-  // Currently, will only return true if EXACTLY argv[1] is set to '-n'.
-  // TODO: Update this to function like UNIX builtin flags (set anywhere and in any combination).
-  if (argc > 1 && strcmp(argv[1], "-n") == 0)
-  {
-    printf("NOISY TEST\n");
-    return true;
-  }
-  else
-  {
-    printf("For noisy test: %s -n\n", argv[0]);
-    return false;
-  }
-}
 
-void print_gameState(struct gameState *pre, struct gameState *post)
-{
-  printf("numPlayers = %d", pre->numPlayers);
-  if(pre->numPlayers != post->numPlayers) printf(" || %d", post->numPlayers);
-  printf("\n");
+		//random number of estate cards in supply
+		supplyCT = rand() % (8);
 
-  printf("outpostPlayed = %d", pre->outpostPlayed);
-  if(pre->outpostPlayed != post->outpostPlayed) printf("|| %d", post->outpostPlayed);
-  printf("\n");
+		G.supplyCount[estate] = supplyCT;
 
-  printf("outpostTurn = %d", pre->outpostTurn);
-  if(pre->outpostTurn != post->outpostTurn) printf(" || %d", post->outpostTurn);
-  printf("\n");
+		//current player either 0 or 1
+		currentPlayer = rand() % 2;
 
-  printf("whoseTurn = %d", pre->whoseTurn);
-  if(pre->whoseTurn != post->whoseTurn) printf(" || %d", post->whoseTurn);
-  printf("\n");
+		//change the hand count
+		handCT = rand() % (MAX_DECK);
+		
+		G.handCount[currentPlayer] = handCT;
 
-  printf("phase = %d", pre->phase);
-  if(pre->phase != post->phase) printf(" || %d", post->phase);
-  printf("\n");
-  
-  printf("numActions = %d", pre->numActions);
-  if(pre->numActions != post->numActions) printf(" || %d", post->numActions);
-  printf("\n");
+		execute_baron(&G, choice1, currentPlayer);
+	
+										
+		//reset to see what values proved true
+		passed = 1;
+			
 
-  printf("coins = %d", pre->coins);
-  if(pre->coins != post->coins) printf(" || %d", post->coins);
-  printf("\n");
+		int pos;
+		int cardSpot = 0;
+		for(pos = 0; pos < G.handCount[currentPlayer]; pos++)
+		{
+			if(G.hand[currentPlayer][pos] == estate)
+				cardSpot = 1; //Card is found
+		}
 
-  printf("numBuys = %d", pre->numBuys);
-  if(pre->numBuys != post->numBuys) printf(" || %d\n", post->numBuys);
-  printf("\n");
 
-  int currentPlayer = 1;
-  for (currentPlayer = 1; currentPlayer < pre->numPlayers + 1; currentPlayer++)
-  {
-    printf("handCount[%d] = %d", currentPlayer, pre->handCount[currentPlayer]);
-    if(pre->handCount[currentPlayer] != post->handCount[currentPlayer]) printf(" || %d", post->handCount[currentPlayer]);
-    printf("\n");
 
-    printf("deckCount[%d] = %d", currentPlayer, pre->deckCount[currentPlayer]);
-    if(pre->deckCount[currentPlayer] != post->deckCount[currentPlayer]) printf(" || %d", post->deckCount[currentPlayer]);
-    printf("\n");
+		if(choice1 > 0)
+		{
+			//coin failure
+			if((testG.coins + 4) != G.coins && cardSpot == 1)
+			{
+				printf("Incorrect number of coins added\n");
+				failureCoin++;
+				passed = 0;
+			}	
+		
+			//number of buys failure
+			if((testG.numBuys + 1) != G.numBuys)
+			{
+				printf("Incorrect number of buys added\n");
+				failureBuy++;
+				passed = 0;
+			}
+			//discard Count failure
+			if((testG.discardCount[currentPlayer] + 1) != G.discardCount[currentPlayer] && cardSpot == 1)
+			{
+				printf("Incorrect number of cards Discarded\n");
+				failureDiscard++;
+				passed = 0;	
+			}
+			//handCount failure
+			if((G.handCount[currentPlayer] != -1) && cardSpot == 1)
+			{
+				printf("Incorrect number of cards added to hand\n");
+				failureHand++;
+				passed = 0;
+			}
+		}
 
-    printf("discardCount[%d] = %d", currentPlayer, pre->discardCount[currentPlayer]);
-    if(pre->discardCount[currentPlayer] != post->discardCount[currentPlayer]) printf(" || %d", post->discardCount[currentPlayer]);
-    printf("\n");
+		if(passed == 1)
+		{
+			passedCount++;
+		}			
 
-    printf("playedCards[%d] = %d", currentPlayer, pre->playedCards[currentPlayer]);
-    if(pre->playedCards[currentPlayer] != post->playedCards[currentPlayer]) printf(" || %d", post->playedCards[currentPlayer]);
-    printf("\n");
-  }
+	}
+	
 
-  printf("playedCardCount = %d", pre->playedCardCount);
-  if(pre->playedCardCount != post->playedCardCount) printf(" || %d\n", post->playedCardCount);
-  printf("\n");
+	printf("\n%d Tests Passed!\t", passedCount);
+	printf("%d buys failed, ", failureBuy);
+	printf("%d coins count failed, ", failureCoin);
+	printf("%d discard count failed, ", failureDiscard);
+	printf("and %d hand count failied!\n", failureHand);
+
+	if(passedCount == MAX_RUNS)
+		printf("All Tests Pass for Baron Card!!!\n\n");
+
+	return 0;
 }

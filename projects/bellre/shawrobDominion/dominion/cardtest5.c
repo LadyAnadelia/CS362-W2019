@@ -1,82 +1,83 @@
-#include "dominion_helpers.h"   // "dominion.h" is included within this header.
-#include <stdio.h>              // printf
-#include <string.h>             // memcpy
+/*																		
+ * Name: Rebecca Bell
+ *Part of document came from examples given to us in class 
+testUpdateCoins.c and cardtest4.c
+ */
 
-#define testResult int
-#define success 1
-#define failure 0
+#include "dominion.h"
+#include "dominion_helpers.h"
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include "rngs.h"
 
-#define bool  int
-#define true  1
-#define false 0
+//set to 0 to remove printfs from output
+#define NOISY_TEST 1
 
-bool NOISY_TEST = false;
-#define noisyprint if(NOISY_TEST) printf
+int main() {
+	int seed  = 1000;
+	int numPlayer = 2;
+	int k[10] = {adventurer, council_room, feast, gardens, mine, remodel, smithy, village, baron, great_hall};
+	
+	struct gameState testG, G;
+	initializeGame(numPlayer, k, seed, &G);
+#if(NOISY_TEST == 1)		
+	printf("-----------Testing function: drawCard() --------------\n");
+#endif	
+	memcpy(&testG, &G, sizeof(struct gameState));
+	
+	/************************************************************/
+	int currentPlayer = 0;
+	int nextPlayer = 1;
+	int handCT, deckCT;
+	int r, t;
+#if(NOISY_TEST == 1)
+	//check that thehand count goes up and deck count goes down.	
+	deckCT = G.deckCount[currentPlayer] - 1;
+	handCT = G.handCount[currentPlayer] + 1;
+								
+	r = drawCard(currentPlayer, &testG);
+	printf("Testing return value = %d, expected = 0\n", r);
 
-char testTitle[256];
+	printf("Testing deck Count = %d, expected %d\n", testG.deckCount[currentPlayer], deckCT);
+	printf("Testing hand Count = %d, expected %d\n", testG.handCount[currentPlayer], handCT);
+	
+	//check to make cure other player did not change value
 
-void assert_true(testResult result)
-{
-  if (result == success)
-    printf("+ PASS\t%s\n", testTitle);
-  else
-    printf("- FAIL\t%s\n", testTitle);
-}
+	printf("Testing next Players deckCount = %d, expected %d\n", testG.deckCount[nextPlayer], G.deckCount[nextPlayer]);
+	printf("Testing next Players handCount = %d, expected %d\n", testG.handCount[nextPlayer], G.handCount[nextPlayer]);
+#endif
+	//assert(r == 0);
+	//assert(testG.deckCount[currentPlayer] == deckCT);	
+	//assert(testG.handCount[currentPlayer] == handCT);
+	//assert(testG.deckCount[nextPlayer] == G.deckCount[nextPlayer]);
+	//assert(testG.handCount[nextPlayer] == G.handCount[nextPlayer]);
 
-testResult first_test_returns_success(struct gameState gameState)
-{
-  noisyprint("First test returns success:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "First test returns success.", 255);
+#if(NOISY_TEST == 1)
+	testG.deckCount[currentPlayer] = -1; //set deckCount to -1 to get if statemement
+	r = drawCard(currentPlayer, &testG);
+	//run function and see what the current discardCardCount is
+	printf("Testing new deckCount = %d, expected %d\n", testG.deckCount[currentPlayer], testG.discardCount[currentPlayer]);
+	
+	//change the discard count and get a return value of r in function
+	testG.discardCount[currentPlayer] = 0;	
+	t = drawCard(currentPlayer, &testG);
+	printf("Testing return value with no discard card = %d, expected = -1\n", t);
 
-  return success;
-}
+	printf("Testing deck Count = %d, expected %d\n", testG.deckCount[currentPlayer], deckCT);
+        printf("Testing hand Count = %d, expected %d\n", testG.handCount[currentPlayer], handCT);
 
-testResult draw_card_increases_card_count(struct gameState gameState)
-{
-  noisyprint("Card draw increases cards in hand:\n");
-  struct gameState testState;
-  memcpy(&testState, &gameState, sizeof(struct gameState));
-  memset(testTitle, '\0', 256);
-  if(!NOISY_TEST) strncpy(testTitle, "Card draw increases cards in hand.", 255);
+	printf("Testing next Players deckCount = %d, expected %d\n", testG.deckCount[nextPlayer], G.deckCount[nextPlayer]);
+	printf("Testing next Players handCount = %d, expected %d\n", testG.handCount[nextPlayer], G.handCount[nextPlayer]);
 
-  int cardsBefore = 0;
-  int cardsAfter  = 0;
+#endif
+	
+	//assert(r == 0);
+	//assert(t == -1);
+	//assert(testG.deckCount[currentPlayer] == deckCT);	
+	//assert(testG.handCount[currentPlayer] == handCT);
+	//assert(testG.deckCount[nextPlayer] == G.deckCount[nextPlayer]);
+	//assert(testG.handCount[nextPlayer] == G.handCount[nextPlayer]);
 
-  cardsBefore = testState.handCount[0];
-  noisyprint("cardsBefore = %d\n", cardsBefore);
-
-  drawCard(0, &gameState);
-
-  cardsAfter = testState.handCount[0];
-  noisyprint("cardsAfter = %d\n", cardsAfter);
-
-  if(cardsAfter == cardsBefore + 1)
-    return success;
-  else
-    return failure;
-}
-
-int main(int argc, char *argv[]){
-  if (argc > 1 && strcmp(argv[1], "-n") == 0) NOISY_TEST = true;
-
-  printf("\n===BEGIN TEST SUITE FOR FUNCTION: DRAWCARD===\n");
-  if(!NOISY_TEST) printf("For noisy test: %s -n\n\n", argv[0]);
-
-  struct gameState gameState;
-
-  const int NUM_PLAYERS = 2;
-  const int RNG_SEED    = 1000;
-
-  int kingdom[10] = {adventurer, embargo, village, minion, mine, cutpurse, sea_hag, tribute, smithy, council_room};
-
-  initializeGame(NUM_PLAYERS, kingdom, RNG_SEED, &gameState);
-
-  assert_true( first_test_returns_success(gameState) );
-  assert_true( draw_card_increases_card_count(gameState) );
-
-  printf("====END TEST SUITE FOR FUNCTION: DRAWCARD====\n\n");
-  return 0;
+return 0;
 }
