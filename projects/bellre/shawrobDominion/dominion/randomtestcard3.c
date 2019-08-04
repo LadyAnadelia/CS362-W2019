@@ -88,7 +88,7 @@ int main()
 			}
 			else if(G.discardCount[nextPlayer] > 0)
 			{				
-				if((testG.discardCount[nextPlayer] -1) != G.deckCount[nextPlayer]);
+				if((testG.discardCount[nextPlayer] -1) != G.discardCount[nextPlayer]);
 				{
 					printf("Incorrect discardCount for next Player\n");	
 					discardFail++;
