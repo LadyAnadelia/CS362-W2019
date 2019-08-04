@@ -70,9 +70,9 @@ int main() {
 	cost1 = getCost(testG.hand[currentPlayer][choice1] + 3);
 	cost2 = getCost(choice2);
 	
-	printf("Can Afford: cost 1 = %d < cost 2 = %d\n", cost1, cost2);
+	printf("Can Afford: cost 1 = %d > cost 2 = %d\n", cost1, cost2);
 	r3 = execute_mine(&testG, choice1, choice2, handPos, currentPlayer);
-	printf("Return value = %d, expected = 0\n", r3);                        
+	printf("Return value = %d, expected = -1\n", r3);                        
 	
 	int handCT;
 	handCT = G.handCount[currentPlayer] - 2;
